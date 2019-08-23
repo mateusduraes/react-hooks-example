@@ -1,23 +1,42 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
+import './app.css'
 
 function App() {
-  const [contacts] = useState([
-    {
-      name: 'Lucas',
-      id: 1,
-    },
-    {
-      name: 'Luís',
-      id: 2,
-    },
-  ])
+  const [contacts, setContacts] = useState([])
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState(null)
+
+  // Similar to componentDidMount and componentDidUpdate
+  useEffect(() => {
+    async function getContacts() {
+      try {
+        setIsLoading(true)
+        const response = await fetch('https://randomuser.me/api/?results=10')
+        const contacts = await response.json()
+        setContacts(contacts.results)
+      } catch (e) {
+        setError(e)
+      }
+      setIsLoading(false)
+    }
+
+    getContacts()
+  }, [])
 
   return (
-    <div>
+    <div className="container">
       <h1>Contact list</h1>
-      <ul>
-        {contacts.map(contact => (
-          <li key={contact.id}>{contact.name}</li>
+      {isLoading && <div className="loading">Loading...</div>}
+      {error && <div className="error">{error.message} :(</div>}
+      <ul className="contact-list">
+        {contacts.map((contact, idx) => (
+          <li className="contact" key={idx}>
+            <img src={contact.picture.medium} alt={contact.name.first} />
+            <div>
+              <p className="contact-name">{contact.name.first}</p>
+              <p>{contact.email}</p>
+            </div>
+          </li>
         ))}
       </ul>
     </div>
